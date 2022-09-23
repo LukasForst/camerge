@@ -1,0 +1,7 @@
+*.ical
+*.ics
+venv
+.cache
+.idea
+
+test.py
