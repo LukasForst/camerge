@@ -32,7 +32,8 @@ async def calendar():
             # take this event stream and do not anonymize event summary
             ("https://p30-caldav.icloud.com/published/2/xxx", False),
         ],
-        # take event availability from these email addresses 
+        # take event availability from these email addresses, these should be your own email addresses
+        # associated with the claendar account
         known_emails=[
             'me@example.com', 'otherme@example.com'
         ],
@@ -52,11 +53,4 @@ Requirements for the library:
 ```
 icalendar==4.1.0
 requests==2.28.1
-```
-
-With the example Fast API:
-
-```
-fastapi==0.85.0
-uvicorn==0.18.3
 ```
