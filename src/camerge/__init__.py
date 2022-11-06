@@ -65,15 +65,15 @@ def __determine_status(component: Event, known_emails: List[str]) -> str:
             else [component['attendee']]
         # then we obtain "raw" ical data as sometimes it's in 'email' field and sometimes in 'to_ical()'
         # gives us the email
+
+        # get participation status for each attendee only in case the object has params, so we don't cause exception
+        # and filter only cases where known email in either in email property or in the ical code
         # TODO: this part is not optimal (and quite slow)
-        partstats = [a.params.get('partstat')  # get participation status
-                     for a in attendees if  # for each attendee
-                     hasattr(a, 'params')  # only in case the object has params, so we don't cause exception
-                     and any(
-                         # and filter only cases where known email in either in email property or in the ical code
-                         email in f"{a.params.get('email', '')}|{a.to_ical().decode()}"
-                         for email in known_emails
-                     )]
+        partstats = [a.params.get('partstat')
+                     for a in attendees
+                     if hasattr(a, 'params') and any(email in f"{a.params.get('email', '')}|{a.to_ical().decode()}"
+                                                     for email in known_emails
+                                                     )]
         # one of the known emails confirmed the event, thus the user is going
         if 'ACCEPTED' in partstats:
             return 'CONFIRMED'
