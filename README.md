@@ -48,9 +48,4 @@ async def calendar():
 
 This project is based on [icalendar](https://github.com/collective/icalendar).
 
-Requirements for the library:
-
-```
-icalendar==4.1.0
-requests==2.28.1
-```
+Requirements for the library - [requirements.txt](requirements.txt).
