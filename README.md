@@ -1,5 +1,9 @@
 # Camerge
 
+[![PyPi version](https://badgen.net/pypi/v/camerge/)](https://pypi.python.org/pypi/camerge)
+[![PyPI license](https://img.shields.io/pypi/l/camerge.svg)](https://pypi.python.org/pypi/camerge/)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/camerge.svg)](https://pypi.python.org/pypi/camerge/)
+
 A simple library for merging multiple calendars into one.
 It also allows anonymization of the events, so nobody will be able to see the summary of the event.
 
