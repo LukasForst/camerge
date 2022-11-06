@@ -17,5 +17,7 @@ __pycache__/
 *.so
 *~
 
+.version
+
 # due to using tox and pytest
 .tox

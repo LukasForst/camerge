@@ -4,7 +4,7 @@ See:
 https://packaging.python.org/guides/distributing-packages-using-setuptools/
 https://github.com/pypa/sampleproject
 """
-
+import os
 import pathlib
 
 # Always prefer setuptools over distutils
@@ -14,6 +14,22 @@ here = pathlib.Path(__file__).parent.resolve()
 
 # Get the long description from the README file
 long_description = (here / "README.md").read_text(encoding="utf-8")
+
+
+def determine_version() -> str:
+    # first try to load from the env variable
+    maybe_version = os.getenv('RELEASE_VERSION')
+    # then from the file
+    if not maybe_version and os.path.exists('.version'):
+        with open('.version') as f:
+            maybe_version = f.read().strip()
+    # if that does not help, we use default
+    if not maybe_version:
+        maybe_version = "0.0.1"
+    return maybe_version
+
+
+version = determine_version()
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
