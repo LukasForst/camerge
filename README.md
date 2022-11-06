@@ -1,6 +1,6 @@
 # Camerge
 
-A simple tool for merging multiple calendars into one.
+A simple library for merging multiple calendars into one.
 It also allows anonymization of the events, so nobody will be able to see the summary of the event.
 
 What this solves:
@@ -47,5 +47,3 @@ async def calendar():
 ## Dependencies
 
 This project is based on [icalendar](https://github.com/collective/icalendar).
-
-Requirements for the library - [requirements.txt](requirements.txt).
