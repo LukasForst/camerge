@@ -84,7 +84,7 @@ setup(
         "Development Status :: 4 - Beta",
         # Indicate who your project is intended for
         "Intended Audience :: Developers",
-        "Topic :: Software Development :: Calendar Tooling",
+        'Operating System :: OS Independent',
         # Pick your license as you wish
         "License :: OSI Approved :: MIT License",
         # Specify the Python versions you support here. In particular, ensure
@@ -94,8 +94,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.11"
     ],
     # This field adds keywords for your project which will appear on the
     # project page. What does your project relate to?
