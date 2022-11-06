@@ -16,7 +16,7 @@ here = pathlib.Path(__file__).parent.resolve()
 long_description = (here / "README.md").read_text(encoding="utf-8")
 
 
-def determine_version() -> str:
+def determine_version(default: str = "0.0.1") -> str:
     # first try to load from the env variable
     maybe_version = os.getenv('RELEASE_VERSION')
     # then from the file
@@ -25,7 +25,8 @@ def determine_version() -> str:
             maybe_version = f.read().strip()
     # if that does not help, we use default
     if not maybe_version:
-        maybe_version = "0.0.1"
+        print(f"No version set! Using default version: {default}\n")
+        maybe_version = default
     return maybe_version
 
 
