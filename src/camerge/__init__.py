@@ -2,8 +2,8 @@ import datetime
 import logging
 from hashlib import md5
 from typing import List, Optional, Callable, Tuple, Union
+from urllib.request import Request, urlopen
 
-import requests
 from icalendar import Calendar, Event, Timezone
 from icalendar.cal import Component
 
@@ -27,9 +27,10 @@ def __generate_uid(component: Event, domain: str) -> str:
     """
     # if the uid exist, we use it and run md5
     # if not, we use the whole event as a base for the md5
-    hashed_version = md5((component['uid'] if 'uid' in component
-                          else component.to_ical().decode()).encode(),
-                         usedforsecurity=False).hexdigest()
+    hashed_version = md5((component['uid']
+                          if 'uid' in component
+                          else component.to_ical().decode()).encode()
+                         ).hexdigest()
     # and append used domain
     return f'{hashed_version}@{domain}'
 
@@ -71,7 +72,7 @@ def __determine_status(component: Event, known_emails: List[str]) -> str:
         # TODO: this part is not optimal (and quite slow)
         partstats = [a.params.get('partstat')
                      for a in attendees
-                     if hasattr(a, 'params') and any(email in f"{a.params.get('email', '')}|{a.to_ical().decode()}"
+                     if hasattr(a, 'params') and any(email in a.to_ical().decode().replace('\n', '')
                                                      for email in known_emails
                                                      )]
         # one of the known emails confirmed the event, thus the user is going
@@ -134,26 +135,36 @@ def __process_calendar_data(
     return components
 
 
-def __get_calendar_data(ical_url: str) -> Optional[str]:
+def __get_calendar_data(calendar_data: str) -> Optional[str]:
     """
-    Downloads calendar from the given url or filesystem and returns calendar data.
-    :param ical_url: https:// url OR file:// to download calendar
+    Downloads calendar from the given url, filesystem or just returns data and returns calendar data.
+    :param calendar_data: https:// url, file:// or data:// to download calendar
     :return: calendar string data or None if there was a problem downloading them
     """
     try:
-        if ical_url.startswith('file://'):
-            with open(ical_url[7:], 'r') as f:
+        # process loading from the file
+        if calendar_data.startswith('file://'):
+            with open(calendar_data[7:], 'r') as f:
                 return f.read()
-        else:
-            r = requests.get(ical_url)
-            return r.text
+        # process http request
+        elif calendar_data.startswith('http') or calendar_data.startswith('webcal://'):
+            # use http instead of webcal
+            calendar_data = calendar_data.replace('webcal', 'http') \
+                if calendar_data.startswith('webcal://') \
+                else calendar_data
+            # and then use standard library to request data
+            with urlopen(Request(calendar_data)) as response:
+                return response.read().decode()
+        # process pure ical data
+        elif calendar_data.startswith('data://'):
+            return calendar_data[7:]
     except Exception as e:
-        logger.exception(f'There was a problem when downloading calendar {ical_url[:10]}..', e)
+        logger.exception(f'There was a problem when downloading calendar {calendar_data[:10]}..', e)
     return None
 
 
 def merge_calendars(
-        calendar_urls: List[Tuple[str, bool]],
+        calendar_data: List[Tuple[str, bool]],
         known_emails: Optional[List[str]] = None,
         calendar_name: str = 'Merged Calendar',
         busy_placeholder: str = 'busy',
@@ -162,7 +173,8 @@ def merge_calendars(
 ) -> str:
     """
     Takes calendar urls, downloads them and merges them.
-    :param calendar_urls: tuple where first parameter is url and second option to anonymize data [url, shouldAnonymize]
+    :param calendar_data: tuple where first parameter is calendar data (can be https://, file://, data://) and second
+    option to anonymize data [calendar, shouldAnonymize]
     :param known_emails: email addresses of the user that owns this calendar, used to detect declined events
     :param calendar_name name of the new calendar
     :param busy_placeholder when anonymizing the event what placeholder to use
@@ -174,7 +186,7 @@ def merge_calendars(
     calendar.add('prodid', calendar_name)
     calendar.add('version', '2.0')
     # we go one
-    for url, anonymize in calendar_urls:
+    for url, anonymize in calendar_data:
         calendar_data = __get_calendar_data(url)
         # if it was not possible to download it, we need to skip it
         if not calendar_data:
