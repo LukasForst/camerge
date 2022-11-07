@@ -30,7 +30,7 @@ async def calendar():
     ical = merge_calendars(
         calendar_name='My Availability',
         calendar_domain='my.calendar.example.com',
-        calendar_urls=[
+        calendar_data=[
             # take this google ical stream and anonymize events (no event names shown)
             ("https://calendar.google.com/calendar/ical/me@me.com/private-x/basic.ics", True),
             # take this event stream and do not anonymize event summary
