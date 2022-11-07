@@ -54,6 +54,16 @@ class TestBasics(unittest.TestCase):
         self.assertIn('SUMMARY:busy', calendar)
         self.assertIn('UID:4fdade89dd887bf4d663baa7bfb8f373@camerge', calendar)
 
+    def test_declined_event(self):
+        calendar = merge_calendars(
+            calendar_data=[(f'file://{data("declined-event.ics")}', True)],
+            known_emails=['declined@example.com']
+        )
+        print(calendar)
+        self.assertIn('STATUS:CANCELLED', calendar)
+        self.assertIn('SUMMARY:busy', calendar)
+        self.assertIn('UID:096c532031e4d1b56cff137b5ad6e656@camerge', calendar)
+
 
 if __name__ == '__main__':
     unittest.main()
