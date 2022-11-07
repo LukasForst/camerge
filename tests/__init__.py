@@ -1,3 +1,6 @@
-# the inclusion of the tests module is not meant to offer best practices for
-# testing in general, but rather to support the `find_packages` example in
-# setup.py that excludes installing the "tests" package
+import os.path
+
+
+def data(f: str) -> str:
+    current = os.path.dirname(os.path.realpath(__file__))
+    return f'{current}/data/{f}'
