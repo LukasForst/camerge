@@ -119,13 +119,15 @@ def __process_calendar_data(
             # TODO: maybe investigate what is really needed and what is not
             event = __copy_event(component, [
                 'dtstart', 'dtend', 'dtstamp', 'rrule', 'status', 'summary',
-                'transp', 'sequence', 'recurrence-id'
+                'transp', 'sequence', 'recurrence-id', 'location', 'uid', 'categories'
             ])
-            # now obfuscate uid, so we don't disclose the original source
-            event['uid'] = __generate_uid(component, calendar_domain)
+            
+            #event['uid'] = __generate_uid(component, calendar_domain)
             # now we anonymize summary, if needed
+            # now obfuscate uid, so we don't disclose the original source
             if busy_place_holder:
                 event['summary'] = busy_place_holder
+                event['uid'] = __generate_uid(component, calendar_domain)
             # now we need to change status if the event was declined as cancelled
             event['status'] = __determine_status(component, known_emails)
             # and map it if needed
@@ -158,18 +160,21 @@ def __get_calendar_data(calendar_data: str) -> Optional[str]:
         # process pure ical data
         elif calendar_data.startswith('data://'):
             return calendar_data[7:]
+        else:
+            logger.info(f'There was a problem when downloading calendar with URL {calendar_data}')
     except Exception as e:
         logger.exception(f'There was a problem when downloading calendar {calendar_data[:10]}..', e)
     return None
 
 
 def merge_calendars(
-        calendar_data: List[Tuple[str, bool]],
+        calendar_data: List[Tuple[str, bool, Optional[Callable[[Event, Event], None]]]],
         known_emails: Optional[List[str]] = None,
         calendar_name: str = 'Merged Calendar',
         busy_placeholder: str = 'busy',
         calendar_domain: str = 'camerge',
-        skip_events_before: Optional[datetime.date] = None
+        skip_events_before: Optional[datetime.date] = None,
+        event_mapper = Optional[Callable[[Event, Event], None]],
 ) -> str:
     """
     Takes calendar urls, downloads them and merges them.
@@ -185,9 +190,11 @@ def merge_calendars(
     calendar = Calendar()
     calendar.add('prodid', calendar_name)
     calendar.add('version', '2.0')
+    calendar.add('X-WR-CALNAME',calendar_name)
     # we go one
-    for url, anonymize in calendar_data:
+    for url, anonymize, cal_event_mapper in calendar_data:
         calendar_data = __get_calendar_data(url)
+
         # if it was not possible to download it, we need to skip it
         if not calendar_data:
             continue
@@ -197,7 +204,8 @@ def merge_calendars(
             calendar_domain=calendar_domain,
             known_emails=known_emails if known_emails else [],
             busy_place_holder=busy_placeholder if anonymize else None,
-            skip_events_before=skip_events_before
+            skip_events_before=skip_events_before, 
+            event_mapper=cal_event_mapper
         )
         # so we can add them to the calendar
         for component in components:
